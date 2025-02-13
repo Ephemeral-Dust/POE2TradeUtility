@@ -28,6 +28,13 @@ A trade utility for Path of Exile 2.
 
 Open an issue or pull request if you have any suggestions or improvements.
 
+## Planned Features
+
+- Add a feature to help suggest weighted sum values.
+- Add a feature to track items you message people about.
+- Add a feature to check stats of rings and amulets with different quality types.
+
 ## Support
 
+Any support is greatly appreciated and will help me continue to develop this project and any future projects.
 <a href="https://www.buymeacoffee.com/ephemeraldust" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
