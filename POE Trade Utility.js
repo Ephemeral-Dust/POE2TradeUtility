@@ -13,6 +13,7 @@
 // @grant        GM_listValues
 // @run-at       document-idle
 // @icon         https://www.google.com/s2/favicons?domain=pathofexile.com
+// @downloadURL  https://github.com/Ephemeral-Dust/POE2TradeUtility/blob/a59e091e72e188f56eb79685a983011040bfccae/POE%20Trade%20Utility.js
 // @noframes
 // @license      Unlicense
 // ==/UserScript==
@@ -28,31 +29,10 @@ var tabs = [{
     }
 ];
 
-testItem = `
-Item Class: Wands
-Rarity: Rare
-Armageddon Charm
-Attuned Wand
---------
-Requirements:
-Level: 78
-Int: 178
---------
-Item Level: 81
---------
-83% increased Spell Damage
-+48 to maximum Mana
-+5 to Level of all Lightning Spell Skills
-18% increased Cast Speed
-+17 to Intelligence
---------
-Note: ~price 7 divine
-`;
-
 // Global variables for tab contents
 var tabContentHTML = `
     <label for="itemTextArea">Paste Item Below:</label>
-    <textarea id="itemTextArea" rows="20" style="width: 100%; background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;">${testItem}</textarea>
+    <textarea id="itemTextArea" rows="20" style="width: 100%; background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;"></textarea>
     <button id="calculateButton" style="margin-top: 10px; padding: 10px; background: #555; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Calculate</button>
     <p id="resultLabel" style="margin-top: 10px; color: #fff;"></p>
 `;
@@ -427,7 +407,6 @@ function getWeightedSum() {
 }
 
 function processMod(modLine) {
-    console.log(`Parsing mod line: ${modLine}`);
 
     // Match any numbers in the mod line
     const numberMatches = modLine.match(/([+-]?\d+(\.\d+)?)/g);
@@ -452,7 +431,6 @@ function processMod(modLine) {
             value: parseFloat(value),
             mod: modText
         };
-        console.log(`Parsed mod: ${JSON.stringify(parsedMod)}`);
         return parsedMod;
     }
 
@@ -461,7 +439,6 @@ function processMod(modLine) {
         value: null,
         mod: modLine
     };
-    console.log(`Default mod: ${JSON.stringify(defaultMod)}`);
     return defaultMod;
 }
 
@@ -549,7 +526,6 @@ function processItem(row, processedRows) {
         });
 
         if (!hasTargetRune) {
-            console.log('Item does not have Iron Rune');
 
             const es = middleDiv.querySelector('span[data-field="es"] .colourAugmented, span[data-field="es"] .colourDefault');
             const ar = middleDiv.querySelector('span[data-field="ar"] .colourAugmented, span[data-field="ar"] .colourDefault');
@@ -561,7 +537,6 @@ function processItem(row, processedRows) {
 
             const itemTypeDiv = middleDiv.querySelector('.content .property span.lc span');
             const itemType = itemTypeDiv ? itemTypeDiv.textContent.trim() : 'Unknown';
-            console.log(`Item Type: ${itemType}`);
 
             const corruptedDiv = middleDiv.querySelector('.content .unmet span.lc');
             const corrupted = corruptedDiv ? corruptedDiv.textContent.trim() : '';
@@ -608,7 +583,6 @@ function processItem(row, processedRows) {
                     value = parseFloat(ar.innerText);
                 }
 
-                console.log(`AR: ${value}`);
                 var ironRuneValue = calculateIronRuneValue(value);
 
                 const newElement = document.createElement('span');
@@ -625,7 +599,6 @@ function processItem(row, processedRows) {
                     value = parseFloat(es.innerText);
                 }
 
-                console.log(`ES: ${value}`);
                 var ironRuneValue = calculateIronRuneValue(value);
 
                 const newElement = document.createElement('span');
@@ -642,7 +615,6 @@ function processItem(row, processedRows) {
                     value = parseFloat(ev.innerText);
                 }
 
-                console.log(`EV: ${value}`);
                 var ironRuneValue = calculateIronRuneValue(value);
 
                 const newElement = document.createElement('span');
@@ -665,7 +637,6 @@ function processItem(row, processedRows) {
                     pdpsValue = parseFloat(physicalDamage.innerText);
                 }
 
-                console.log(`Physical Damage: ${dpsValue} and Physical DPS: ${pdpsValue}`);
                 var pdpsIronRuneValue = calculateIronRuneValue(pdpsValue);
 
                 var calculatedDPS = (pdpsIronRuneValue - pdpsValue + dpsValue).toFixed(1);
