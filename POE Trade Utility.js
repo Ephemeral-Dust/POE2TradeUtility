@@ -20,7 +20,7 @@
 
 var panelSide = GM_getValue('panelSide', 'right');
 var tabs = [{
-        id: 'tabContent',
+        id: 'weightedSumContent',
         label: 'Calculate Weighted Sum'
     },
     {
@@ -30,7 +30,7 @@ var tabs = [{
 ];
 
 // Global variables for tab contents
-var tabContentHTML = `
+var weightedSumContentHTML = `
     <label for="itemTextArea">Paste Item Below:</label>
     <textarea id="itemTextArea" rows="20" style="width: 100%; background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;"></textarea>
     <button id="calculateButton" style="margin-top: 10px; padding: 10px; background: #555; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Calculate</button>
@@ -172,7 +172,7 @@ var settingsContentHTML = `
         const tabContent = document.createElement('div');
         tabContent.id = tabInfo.id;
         tabContent.className = 'tabContent';
-        tabContent.innerHTML = tabInfo.id === 'tabContent' ? tabContentHTML : settingsContentHTML;
+        tabContent.innerHTML = tabInfo.id === 'tabContent' ? weightedSumContentHTML : settingsContentHTML;
         return tabContent;
     }
 
@@ -560,6 +560,10 @@ function processItem(row, processedRows) {
 
             if (socketsDiv) {
                 sockets = socketsDiv.childElementCount;
+            }
+
+            if (isCorrupted && sockets === 0) {
+                return;
             }
 
             function calculateIronRuneValue(value) {
