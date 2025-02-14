@@ -66,7 +66,7 @@ var settingsContentHTML = `
     // Create tabs and contents
     tabs.forEach(tabInfo => {
         const tabButton = createTabButton(tabInfo);
-        const tabContent = createTabContent(tabInfo);
+        const tabContent = createWeightedSumTab(tabInfo);
 
         tabContainer.appendChild(tabButton);
         panel.appendChild(tabContent);
@@ -94,7 +94,7 @@ var settingsContentHTML = `
 
         tabButton.addEventListener('click', () => {
             document.querySelectorAll('.tabButton').forEach(button => button.classList.remove('active'));
-            document.querySelectorAll('.tabContent').forEach(content => content.classList.remove('show'));
+            document.querySelectorAll('.weightedSumContent').forEach(content => content.classList.remove('show'));
 
             tabButton.classList.add('active');
             tabContent.classList.add('show');
@@ -168,11 +168,11 @@ var settingsContentHTML = `
         return tabButton;
     }
 
-    function createTabContent(tabInfo) {
+    function createWeightedSumTab(tabInfo) {
         const tabContent = document.createElement('div');
         tabContent.id = tabInfo.id;
-        tabContent.className = 'tabContent';
-        tabContent.innerHTML = tabInfo.id === 'tabContent' ? weightedSumContentHTML : settingsContentHTML;
+        tabContent.className = 'weightedSumContent';
+        tabContent.innerHTML = tabInfo.id === 'weightedSumContent' ? weightedSumContentHTML : settingsContentHTML;
         return tabContent;
     }
 
@@ -242,13 +242,13 @@ var settingsContentHTML = `
                 color: #fff;
                 border-color: #555;
             }
-            .tabContent {
+            .weightedSumContent {
                 display: none;
                 padding: 20px;
                 background: #333;
                 border-top: 1px solid #444;
             }
-            .tabContent.show {
+            .weightedSumContent.show {
                 display: block;
             }
         `);
