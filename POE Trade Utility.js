@@ -14,7 +14,8 @@
 // @run-at       document-idle
 // @icon         https://www.google.com/s2/favicons?domain=pathofexile.com
 // @updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js
-// @downloadURL  https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js// @noframes
+// @downloadURL  https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js
+// @noframes
 // @license      Unlicense
 // ==/UserScript==
 
