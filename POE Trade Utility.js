@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         POE2 Trade Utility (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev)
+// @name         POE2 Trade Utility (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev) (Dev)
 // @namespace    http://tampermonkey.net/
 // @version      0.0.2
 // @description  A utility to help with trading in Path of Exile. Currently helps calculate the weighted sum of a item.
@@ -14,7 +14,7 @@
 // @run-at       document-idle
 // @icon         https://www.google.com/s2/favicons?domain=pathofexile.com
 // @homepageURL  https://github.com/Ephemeral-Dust/POE2TradeUtility/tree/main
-// @updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js
+// @updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js
 // @downloadURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js
 // @noframes
 // @license      Unlicense
