@@ -3,7 +3,8 @@ name: Trigger Private Workflow
 on:
   push:
     branches:
-      - main # Runs only when changes are pushed to main
+      - main
+      - dev
 
 jobs:
   trigger_private_workflow:
