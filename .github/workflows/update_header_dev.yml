@@ -33,6 +33,7 @@ jobs:
           else
             echo "Committing changes"
             git commit -m "Update Userscript Header for dev branch" --author="github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          fi
 
       - name: Push changes
         run: |
@@ -41,3 +42,4 @@ jobs:
           else
             echo "Pushing changes to dev branch"
             git push origin dev
+          fi

@@ -34,7 +34,7 @@ jobs:
           else
             echo "Committing changes"
             git commit -m "Update Userscript Header for main branch" --author="github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
-
+          fi
       - name: Push changes
         run: |
           if git diff --cached --quiet; then
@@ -42,3 +42,4 @@ jobs:
           else
             echo "Pushing changes to main branch"
             git push origin main
+          fi
