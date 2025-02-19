@@ -45,16 +45,12 @@ jobs:
 
       - name: Push changes
         run: |
-          # Make sure we're on the correct branch before pushing
+          # Ensure we're on the correct branch
           git checkout dev
 
-          # Verify the commit is there
+          # Verify the commit is in the log
           git log -n 1 --oneline
 
-          # Push changes if there are any
-          if git diff --quiet HEAD; then
-            echo "No changes to push"
-          else
-            echo "Pushing changes to dev branch"
-            git push origin dev
-          fi
+          # Push changes forcefully if needed
+          echo "Pushing changes to dev branch"
+          git push origin dev || (echo "Retrying push with --force" && git push --force origin dev)
