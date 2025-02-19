@@ -31,7 +31,7 @@ Open an issue or pull request if you have any suggestions or improvements.
 ## Planned Features
 
 - Add a feature to help suggest weighted sum values.
-- Add a feature to track items you message people about.
+- ~Add a feature to track items you message people about.~ (Added in version 0.0.2)
 - Add a feature to check stats of rings and amulets with different quality types.
 
 ## Change Notes
