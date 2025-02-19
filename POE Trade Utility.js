@@ -506,13 +506,12 @@ function parseItem(itemText) {
     return item;
 }
 
+// Function for processing each item on page
+
 function processItem(row, processedRows) {
     if (processedRows.has(row)) return;
 
     try {
-        const rowId = row.dataset.id ? row.dataset.id : 0;
-
-
         const leftDiv = row.querySelector('div.left');
         const middleDiv = row.querySelector('div.middle');
         const rightDiv = row.querySelector('div.right');
@@ -521,13 +520,14 @@ function processItem(row, processedRows) {
             return;
         }
 
+        const itemId = row.dataset.id ? row.dataset.id : 0;
+        const sellerName = right.querySelector('.profile-link').textContent.trim();
 
         // Direct Whisper button is clicked.
         const button = rightDiv.querySelector('button.btn.btn-xs.btn-default.direct-btn');
-        if (button) {
-            button.addEventListener('click', () => {
-                console.log(`Row ID: ${rowId}`);
-            });
+
+        if (button && itemId && sellerName) {
+            whisperHandler(itemId, sellerName, button);
         }
 
         // Check for specific runeMod elements
@@ -541,135 +541,7 @@ function processItem(row, processedRows) {
         });
 
         if (!hasTargetRune) {
-
-            const es = middleDiv.querySelector('span[data-field="es"] .colourAugmented, span[data-field="es"] .colourDefault');
-            const ar = middleDiv.querySelector('span[data-field="ar"] .colourAugmented, span[data-field="ar"] .colourDefault');
-            const ev = middleDiv.querySelector('span[data-field="ev"] .colourAugmented, span[data-field="ev"] .colourDefault');
-            const physicalDamage = middleDiv.querySelector('span[data-field="pdamage"] .colourAugmented, span[data-field="pdamage"] .colourDefault');
-
-            // Gather additional information
-            const additionalInfoDiv = middleDiv.querySelector('.itemPopupAdditional');
-
-            const itemTypeDiv = middleDiv.querySelector('.content .property span.lc span');
-            const itemType = itemTypeDiv ? itemTypeDiv.textContent.trim() : 'Unknown';
-
-            const corruptedDiv = middleDiv.querySelector('.content .unmet span.lc');
-            const corrupted = corruptedDiv ? corruptedDiv.textContent.trim() : '';
-            let isCorrupted = corrupted === 'Corrupted';
-
-            let modPercent = 0;
-            const explicitMods = middleDiv.querySelectorAll('.content .explicitMod');
-
-            for (const percentMod of percentExplicitMods) {
-                for (const explicitMod of explicitMods) {
-                    const spanElement = explicitMod.querySelector('span[data-field]');
-                    if (spanElement && spanElement.dataset.field === percentMod) {
-                        modPercent = processMod(spanElement.innerText).value;
-                        break;
-                    }
-                }
-            }
-
-            const socketsDiv = leftDiv.querySelector('.sockets');
-            let sockets = 0;
-
-            if (socketsDiv) {
-                sockets = socketsDiv.childElementCount;
-            }
-
-            if (isCorrupted && sockets === 0) {
-                return;
-            }
-
-            function calculateIronRuneValue(value) {
-                let itemBaseSockets = itemTypes[itemType] || 1;
-
-                if (itemBaseSockets > sockets && !isCorrupted) {
-                    let runes = itemBaseSockets * .2;
-                    value = value * (1 + (runes / (1 + (modPercent / 100))));
-                } else {
-                    let runes = sockets * .2;
-                    value = value * (1 + (runes / (1 + (modPercent / 100))));
-                }
-                return Math.round(value);
-            }
-
-            if (ar && !isNaN(parseFloat(ar.innerText))) {
-                const maxQualityAR = additionalInfoDiv.querySelector('span[data-field="ar"] span');
-                let value = parseFloat(maxQualityAR.innerText);
-
-                if (isNaN(value)) {
-                    value = parseFloat(ar.innerText);
-                }
-
-                var ironRuneValue = calculateIronRuneValue(value);
-
-                const newElement = document.createElement('span');
-                newElement.className = 'lc s aug';
-                newElement.innerHTML = `Armour <span title="with Iron Runes" class="colourAugmented">${ironRuneValue}</span>`;
-                additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
-            }
-
-            if (es && !isNaN(parseFloat(es.innerText))) {
-                const maxQualityES = additionalInfoDiv.querySelector('span[data-field="es"] span');
-                let value = parseFloat(maxQualityES.innerText);
-
-                if (isNaN(value)) {
-                    value = parseFloat(es.innerText);
-                }
-
-                var ironRuneValue = calculateIronRuneValue(value);
-
-                const newElement = document.createElement('span');
-                newElement.className = 'lc s aug';
-                newElement.innerHTML = `Energy Shield <span title="with Iron Runes" class="colourAugmented">${ironRuneValue}</span>`;
-                additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
-            }
-
-            if (ev && !isNaN(parseFloat(ev.innerText))) {
-                const maxQualityEV = additionalInfoDiv.querySelector('span[data-field="ev"] span');
-                let value = parseFloat(maxQualityEV.innerText);
-
-                if (isNaN(value)) {
-                    value = parseFloat(ev.innerText);
-                }
-
-                var ironRuneValue = calculateIronRuneValue(value);
-
-                const newElement = document.createElement('span');
-                newElement.className = 'lc s aug';
-                newElement.innerHTML = `Evasion <span title="with Iron Runes" class="colourAugmented">${ironRuneValue}</span>`;
-                additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
-            }
-
-            if (physicalDamage && !isNaN(parseFloat(physicalDamage.innerText))) {
-                const maxQualityDPS = additionalInfoDiv.querySelector('span[data-field="dps"] span');
-                const maxQualityPhysicalDPS = additionalInfoDiv.querySelector('span[data-field="pdps"] span');
-
-                let dpsValue = parseFloat(maxQualityDPS.innerText);
-                let pdpsValue = parseFloat(maxQualityPhysicalDPS.innerText);
-
-                if (isNaN(dpsValue)) {
-                    dpsValue = parseFloat(physicalDamage.innerText);
-                }
-                if (isNaN(pdpsValue)) {
-                    pdpsValue = parseFloat(physicalDamage.innerText);
-                }
-
-                var pdpsIronRuneValue = calculateIronRuneValue(pdpsValue);
-
-                var calculatedDPS = (pdpsIronRuneValue - pdpsValue + dpsValue).toFixed(1);
-
-                const newElement = document.createElement('span');
-                newElement.className = 'lc s aug';
-                newElement.innerHTML = `DPS <span title="with Iron Runes" class="colourAugmented">${calculatedDPS}</span>`;
-                additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
-
-                const newElement2 = document.createElement('span');
-                newElement2.className = 'lc s aug';
-                newElement2.innerHTML = `Physical DPS <span title="with Iron Runes" class="colourAugmented">${pdpsIronRuneValue}</span>`;
-                additionalInfoDiv.insertAdjacentElement('beforeend', newElement2);
-            }
+            handleIronRune();
         }
 
         processedRows.add(row);
@@ -677,6 +549,278 @@ function processItem(row, processedRows) {
         console.error('Error processing row:', e);
     }
 }
+
+// Function for handling Iron Rune calculations and displaying the results
+
+function handleIronRune(middleDiv, leftDiv) {
+    const es = middleDiv.querySelector('span[data-field="es"] .colourAugmented, span[data-field="es"] .colourDefault');
+    const ar = middleDiv.querySelector('span[data-field="ar"] .colourAugmented, span[data-field="ar"] .colourDefault');
+    const ev = middleDiv.querySelector('span[data-field="ev"] .colourAugmented, span[data-field="ev"] .colourDefault');
+    const physicalDamage = middleDiv.querySelector('span[data-field="pdamage"] .colourAugmented, span[data-field="pdamage"] .colourDefault');
+
+    // Gather additional information
+    const additionalInfoDiv = middleDiv.querySelector('.itemPopupAdditional');
+
+    const itemTypeDiv = middleDiv.querySelector('.content .property span.lc span');
+    const itemType = itemTypeDiv ? itemTypeDiv.textContent.trim() : 'Unknown';
+
+    const corruptedDiv = middleDiv.querySelector('.content .unmet span.lc');
+    const corrupted = corruptedDiv ? corruptedDiv.textContent.trim() : '';
+    let isCorrupted = corrupted === 'Corrupted';
+
+    let modPercent = 0;
+    const explicitMods = middleDiv.querySelectorAll('.content .explicitMod');
+
+    for (const percentMod of percentExplicitMods) {
+        for (const explicitMod of explicitMods) {
+            const spanElement = explicitMod.querySelector('span[data-field]');
+            if (spanElement && spanElement.dataset.field === percentMod) {
+                modPercent = processMod(spanElement.innerText).value;
+                break;
+            }
+        }
+    }
+
+    const socketsDiv = leftDiv.querySelector('.sockets');
+    let sockets = 0;
+
+    if (socketsDiv) {
+        sockets = socketsDiv.childElementCount;
+    }
+
+    if (isCorrupted && sockets === 0) {
+        return;
+    }
+
+    function calculateIronRuneValue(value) {
+        let itemBaseSockets = itemTypes[itemType] || 1;
+
+        if (itemBaseSockets > sockets && !isCorrupted) {
+            let runes = itemBaseSockets * .2;
+            value = value * (1 + (runes / (1 + (modPercent / 100))));
+        } else {
+            let runes = sockets * .2;
+            value = value * (1 + (runes / (1 + (modPercent / 100))));
+        }
+        return Math.round(value);
+    }
+
+    if (ar && !isNaN(parseFloat(ar.innerText))) {
+        const maxQualityAR = additionalInfoDiv.querySelector('span[data-field="ar"] span');
+        let value = parseFloat(maxQualityAR.innerText);
+
+        if (isNaN(value)) {
+            value = parseFloat(ar.innerText);
+        }
+
+        var ironRuneValue = calculateIronRuneValue(value);
+
+        const newElement = document.createElement('span');
+        newElement.className = 'lc s aug';
+        newElement.innerHTML = `Armour <span title="with Iron Runes" class="colourAugmented">${ironRuneValue}</span>`;
+        additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
+    }
+
+    if (es && !isNaN(parseFloat(es.innerText))) {
+        const maxQualityES = additionalInfoDiv.querySelector('span[data-field="es"] span');
+        let value = parseFloat(maxQualityES.innerText);
+
+        if (isNaN(value)) {
+            value = parseFloat(es.innerText);
+        }
+
+        var ironRuneValue = calculateIronRuneValue(value);
+
+        const newElement = document.createElement('span');
+        newElement.className = 'lc s aug';
+        newElement.innerHTML = `Energy Shield <span title="with Iron Runes" class="colourAugmented">${ironRuneValue}</span>`;
+        additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
+    }
+
+    if (ev && !isNaN(parseFloat(ev.innerText))) {
+        const maxQualityEV = additionalInfoDiv.querySelector('span[data-field="ev"] span');
+        let value = parseFloat(maxQualityEV.innerText);
+
+        if (isNaN(value)) {
+            value = parseFloat(ev.innerText);
+        }
+
+        var ironRuneValue = calculateIronRuneValue(value);
+
+        const newElement = document.createElement('span');
+        newElement.className = 'lc s aug';
+        newElement.innerHTML = `Evasion <span title="with Iron Runes" class="colourAugmented">${ironRuneValue}</span>`;
+        additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
+    }
+
+    if (physicalDamage && !isNaN(parseFloat(physicalDamage.innerText))) {
+        const maxQualityDPS = additionalInfoDiv.querySelector('span[data-field="dps"] span');
+        const maxQualityPhysicalDPS = additionalInfoDiv.querySelector('span[data-field="pdps"] span');
+
+        let dpsValue = parseFloat(maxQualityDPS.innerText);
+        let pdpsValue = parseFloat(maxQualityPhysicalDPS.innerText);
+
+        if (isNaN(dpsValue)) {
+            dpsValue = parseFloat(physicalDamage.innerText);
+        }
+        if (isNaN(pdpsValue)) {
+            pdpsValue = parseFloat(physicalDamage.innerText);
+        }
+
+        var pdpsIronRuneValue = calculateIronRuneValue(pdpsValue);
+
+        var calculatedDPS = (pdpsIronRuneValue - pdpsValue + dpsValue).toFixed(1);
+
+        const newElement = document.createElement('span');
+        newElement.className = 'lc s aug';
+        newElement.innerHTML = `DPS <span title="with Iron Runes" class="colourAugmented">${calculatedDPS}</span>`;
+        additionalInfoDiv.insertAdjacentElement('beforeend', newElement);
+
+        const newElement2 = document.createElement('span');
+        newElement2.className = 'lc s aug';
+        newElement2.innerHTML = `Physical DPS <span title="with Iron Runes" class="colourAugmented">${pdpsIronRuneValue}</span>`;
+        additionalInfoDiv.insertAdjacentElement('beforeend', newElement2);
+    }
+}
+
+// Function for handling whisper button clicks and adding history indicator
+
+function whisperHandler(itemId, sellerName, button) {
+    // Create a new button for adding the item to local storage
+    const addButton = document.createElement('button');
+    addButton.className = 'btn btn-xs btn-default add-btn';
+    addButton.textContent = 'Add';
+
+    // Insert the new button next to the existing button
+    button.parentNode.insertBefore(addButton, button.nextSibling);
+
+    // Add event listener to the new button
+    addButton.addEventListener('click', () => {
+        const priceSpan = rightDiv.querySelector('.price-label + br + span');
+        const currencySpan = rightDiv.querySelector('.currency-text');
+
+        const price = priceSpan ? priceSpan.textContent.trim() : '';
+        const currency = currencySpan ? currencySpan.textContent.trim() : '';
+
+        const priceObject = {
+            price: price,
+            currency: currency
+        };
+
+        // Update the item information in local storage
+        updateItemInfo(itemId, sellerName, priceObject, false);
+    });
+
+    // Add event listener to the existing button
+    button.addEventListener('click', () => {
+        const priceSpan = rightDiv.querySelector('.price-label + br + span');
+        const currencySpan = rightDiv.querySelector('.currency-text');
+
+        const price = priceSpan ? priceSpan.textContent.trim() : '';
+        const currency = currencySpan ? currencySpan.textContent.trim() : '';
+
+        const priceObject = {
+            price: price,
+            currency: currency
+        };
+
+        // Update the item information in local storage
+        updateItemInfo(itemId, sellerName, priceObject, true);
+    });
+
+    // Add hover event listener to show price history popup
+    addButton.addEventListener('mouseenter', () => {
+        setTimeout(() => {
+            const itemInfo = getItemInfo(itemId);
+            if (itemInfo) {
+                const popup = document.createElement('div');
+                popup.className = 'price-history-popup';
+                popup.style.position = 'absolute';
+                popup.style.backgroundColor = '#fff';
+                popup.style.border = '1px solid #ccc';
+                popup.style.padding = '10px';
+                popup.style.zIndex = '1000';
+
+                let content = `<strong>Price History:</strong><br>`;
+                itemInfo.priceHistory.forEach(entry => {
+                    content += `Price: ${entry.price.price} ${entry.price.currency} at ${entry.timestamp}<br>`;
+                });
+                content += `<br><strong>Last Messaged:</strong> ${itemInfo.lastMessaged || 'Never'}`;
+
+                popup.innerHTML = content;
+                document.body.appendChild(popup);
+
+                const rect = addButton.getBoundingClientRect();
+                popup.style.top = `${rect.top + window.scrollY + addButton.offsetHeight}px`;
+                popup.style.left = `${rect.left + window.scrollX}px`;
+
+                addButton.addEventListener('mouseleave', () => {
+                    document.body.removeChild(popup);
+                }, {
+                    once: true
+                });
+            }
+        }, 2000); // Show popup after 2 seconds
+    });
+
+    // Set button border color based on last messaged time
+    const itemInfo = getItemInfo(itemId);
+    if (itemInfo) {
+        const lastMessaged = new Date(itemInfo.lastMessaged);
+        const now = new Date();
+        const timeDiff = (now - lastMessaged) / (1000 * 60 * 60); // Time difference in hours
+
+        if (timeDiff < 1) {
+            button.style.borderColor = 'red';
+        } else if (timeDiff < 24) {
+            button.style.borderColor = 'green';
+        } else {
+            button.style.borderColor = '';
+        }
+    }
+}
+
+// Local storage functions
+
+function updateItemInfo(itemId, sellerName, priceObject, messaged = false) {
+    // Retrieve the existing data from local storage
+    let itemData = JSON.parse(localStorage.getItem('itemData')) || {};
+    var lastMessaged = messaged ? new Date().toISOString() : null;
+
+    // Initialize the item entry if it doesn't exist
+    if (!itemData[itemId]) {
+        itemData[itemId] = {
+            lastMessaged: lastMessaged,
+            priceHistory: [],
+            sellerName: sellerName
+        };
+    }
+
+    // Update the lastMessaged and sellerName
+    itemData[itemId].lastMessaged = lastMessaged;
+    itemData[itemId].sellerName = sellerName;
+
+    // Append the new price entry to the priceHistory list
+    itemData[itemId].priceHistory.push({
+        timestamp: new Date().toISOString(),
+        price: priceObject
+    });
+
+    // Save the updated data back to local storage
+    localStorage.setItem('itemData', JSON.stringify(itemData));
+}
+
+
+function getItemInfo(itemId) {
+    // Retrieve the existing data from local storage
+    let itemData = JSON.parse(localStorage.getItem('itemData')) || {};
+
+    // Return the item information if it exists, otherwise return null
+    return itemData[itemId] || null;
+}
+
+
+// POE Trade Data constants
 
 var percentExplicitMods = [
     "stat.explicit.stat_4015621042", // ES
