@@ -510,10 +510,24 @@ function processItem(row, processedRows) {
     if (processedRows.has(row)) return;
 
     try {
+        const rowId = row.dataset.id ? row.dataset.id : 0;
+
+
         const leftDiv = row.querySelector('div.left');
         const middleDiv = row.querySelector('div.middle');
-        if (!leftDiv || !middleDiv) {
+        const rightDiv = row.querySelector('div.right');
+
+        if (!leftDiv || !middleDiv || !rightDiv) {
             return;
+        }
+
+
+        // Direct Whisper button is clicked.
+        const button = rightDiv.querySelector('button.btn.btn-xs.btn-default.direct-btn');
+        if (button) {
+            button.addEventListener('click', () => {
+                console.log(`Row ID: ${rowId}`);
+            });
         }
 
         // Check for specific runeMod elements
