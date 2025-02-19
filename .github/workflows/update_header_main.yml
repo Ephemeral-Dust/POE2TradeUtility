@@ -17,12 +17,17 @@ jobs:
 
       - name: Modify Userscript Header for Main
         run: |
-          sed -i 's|@name\s*POE2 Trade Utility (Dev)||g' "POE Trade Utility.js"
-          sed -i 's|@name\s*POE2 Trade Utility *$|@name         POE2 Trade Utility|' "POE Trade Utility.js"
+          # Perform the sed replacements
+          sed -i 's|@name\s*POE2 Trade Utility (Dev)$|@name         POE2 Trade Utility|' "POE Trade Utility.js"
           sed -i 's|@updateURL\s*https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js|@updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js|' "POE Trade Utility.js"
           sed -i 's|@downloadURL\s*https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js|@downloadURL  https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js|' "POE Trade Utility.js"
 
+          # Verify changes
+          echo "After sed changes:"
+          grep -E "@name|@updateURL|@downloadURL" "POE Trade Utility.js"
+
           git add "POE Trade Utility.js"
+          git status  # Check if the file is staged for commit
 
       - name: Commit Changes (if any)
         run: |
@@ -35,6 +40,7 @@ jobs:
             echo "Committing changes"
             git commit -m "Update Userscript Header for main branch" --author="github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
           fi
+
       - name: Push changes
         run: |
           if git diff --cached --quiet; then
