@@ -13,6 +13,7 @@
 // @grant        GM_listValues
 // @run-at       document-idle
 // @icon         https://www.google.com/s2/favicons?domain=pathofexile.com
+// @homepageURL  https://github.com/Ephemeral-Dust/POE2TradeUtility/tree/main
 // @updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js
 // @downloadURL  https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js
 // @noframes
@@ -507,7 +508,6 @@ function parseItem(itemText) {
 }
 
 // Function for processing each item on page
-
 function processItem(row, processedRows) {
     if (processedRows.has(row)) return;
 
@@ -521,13 +521,13 @@ function processItem(row, processedRows) {
         }
 
         const itemId = row.dataset.id ? row.dataset.id : 0;
-        const sellerName = right.querySelector('.profile-link').textContent.trim();
+        const sellerName = rightDiv.querySelector('.profile-link').textContent.trim();
 
         // Direct Whisper button is clicked.
         const button = rightDiv.querySelector('button.btn.btn-xs.btn-default.direct-btn');
 
         if (button && itemId && sellerName) {
-            whisperHandler(itemId, sellerName, button);
+            whisperHandler(itemId, sellerName, button, rightDiv);
         }
 
         // Check for specific runeMod elements
@@ -541,7 +541,7 @@ function processItem(row, processedRows) {
         });
 
         if (!hasTargetRune) {
-            handleIronRune();
+            handleIronRune(middleDiv, leftDiv);
         }
 
         processedRows.add(row);
@@ -685,14 +685,32 @@ function handleIronRune(middleDiv, leftDiv) {
 
 // Function for handling whisper button clicks and adding history indicator
 
-function whisperHandler(itemId, sellerName, button) {
+function whisperHandler(itemId, sellerName, button, rightDiv) {
     // Create a new button for adding the item to local storage
     const addButton = document.createElement('button');
     addButton.className = 'btn btn-xs btn-default add-btn';
-    addButton.textContent = 'Add';
+    addButton.textContent = '👁';
+
+    function updateBorderColor() {
+        // Set button border color based on last messaged time
+        const itemInfo = getItemInfo(itemId);
+        if (itemInfo) {
+            const lastMessaged = new Date(itemInfo.lastMessaged);
+            const now = new Date();
+            const timeDiff = (now - lastMessaged) / (1000 * 60 * 60); // Time difference in hours
+
+            if (timeDiff < 1) {
+                button.style.borderColor = 'red';
+            } else if (timeDiff < 24) {
+                button.style.borderColor = 'green';
+            } else {
+                button.style.borderColor = '';
+            }
+        }
+    }
 
     // Insert the new button next to the existing button
-    button.parentNode.insertBefore(addButton, button.nextSibling);
+    button.parentNode.insertBefore(addButton, button);
 
     // Add event listener to the new button
     addButton.addEventListener('click', () => {
@@ -709,6 +727,7 @@ function whisperHandler(itemId, sellerName, button) {
 
         // Update the item information in local storage
         updateItemInfo(itemId, sellerName, priceObject, false);
+        updateBorderColor();
     });
 
     // Add event listener to the existing button
@@ -729,23 +748,30 @@ function whisperHandler(itemId, sellerName, button) {
     });
 
     // Add hover event listener to show price history popup
+    let hoverTimeout;
+
     addButton.addEventListener('mouseenter', () => {
-        setTimeout(() => {
+        hoverTimeout = setTimeout(() => {
             const itemInfo = getItemInfo(itemId);
             if (itemInfo) {
                 const popup = document.createElement('div');
                 popup.className = 'price-history-popup';
                 popup.style.position = 'absolute';
-                popup.style.backgroundColor = '#fff';
-                popup.style.border = '1px solid #ccc';
+                popup.style.backgroundColor = '#333';
+                popup.style.color = '#fff';
+                popup.style.border = '1px solid #444';
                 popup.style.padding = '10px';
+                popup.style.borderRadius = '5px';
+                popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
                 popup.style.zIndex = '1000';
 
                 let content = `<strong>Price History:</strong><br>`;
                 itemInfo.priceHistory.forEach(entry => {
-                    content += `Price: ${entry.price.price} ${entry.price.currency} at ${entry.timestamp}<br>`;
+                    const formattedDate = new Date(entry.timestamp).toLocaleString();
+                    content += `Price: ${entry.price.price} ${entry.price.currency} at ${formattedDate}<br>`;
                 });
-                content += `<br><strong>Last Messaged:</strong> ${itemInfo.lastMessaged || 'Never'}`;
+                const lastMessaged = itemInfo.lastMessaged ? new Date(itemInfo.lastMessaged).toLocaleString() : 'Never';
+                content += `<br><strong>Last Messaged:</strong> ${lastMessaged}`;
 
                 popup.innerHTML = content;
                 document.body.appendChild(popup);
@@ -760,24 +786,14 @@ function whisperHandler(itemId, sellerName, button) {
                     once: true
                 });
             }
-        }, 2000); // Show popup after 2 seconds
+        }, 1000); // Show popup after 1 second
     });
 
-    // Set button border color based on last messaged time
-    const itemInfo = getItemInfo(itemId);
-    if (itemInfo) {
-        const lastMessaged = new Date(itemInfo.lastMessaged);
-        const now = new Date();
-        const timeDiff = (now - lastMessaged) / (1000 * 60 * 60); // Time difference in hours
+    addButton.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimeout);
+    });
 
-        if (timeDiff < 1) {
-            button.style.borderColor = 'red';
-        } else if (timeDiff < 24) {
-            button.style.borderColor = 'green';
-        } else {
-            button.style.borderColor = '';
-        }
-    }
+    updateBorderColor();
 }
 
 // Local storage functions
