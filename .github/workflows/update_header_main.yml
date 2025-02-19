@@ -44,11 +44,11 @@ jobs:
       - name: Push changes
         run: |
           # Ensure we're on the correct branch
-          git checkout dev
+          git checkout main
 
           # Verify the commit is in the log
           git log -n 1 --oneline
 
           # Push changes forcefully if needed
-          echo "Pushing changes to dev branch"
+          echo "Pushing changes to main branch"
           git push origin main || (echo "Retrying push with --force" && git push --force origin main)
