@@ -45,8 +45,14 @@ jobs:
 
       - name: Push changes
         run: |
+          # Make sure we're on the correct branch before pushing
+          git checkout dev
+
+          # Verify the commit is there
+          git log -n 1 --oneline
+
           # Push changes if there are any
-          if git diff --cached --quiet; then
+          if git diff --quiet HEAD; then
             echo "No changes to push"
           else
             echo "Pushing changes to dev branch"
