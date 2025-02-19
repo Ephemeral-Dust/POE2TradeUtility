@@ -34,6 +34,11 @@ Open an issue or pull request if you have any suggestions or improvements.
 - Add a feature to track items you message people about.
 - Add a feature to check stats of rings and amulets with different quality types.
 
+## Change Notes
+
+- Version 0.0.2: Added a feature to track items you message people about, as well as ability to manually track item prices. Expanded the settings tab to enable more customization. Refactored the code to be more modular.
+- Version 0.0.1: Initial release.
+
 ## Support
 
 Any support is greatly appreciated and will help me continue to develop this project and any future projects.
