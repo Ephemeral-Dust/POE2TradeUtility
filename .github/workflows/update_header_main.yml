@@ -43,9 +43,12 @@ jobs:
 
       - name: Push changes
         run: |
-          if git diff --cached --quiet; then
-            echo "No changes to push"
-          else
-            echo "Pushing changes to main branch"
-            git push origin main
-          fi
+          # Ensure we're on the correct branch
+          git checkout dev
+
+          # Verify the commit is in the log
+          git log -n 1 --oneline
+
+          # Push changes forcefully if needed
+          echo "Pushing changes to dev branch"
+          git push origin main || (echo "Retrying push with --force" && git push --force origin main)
