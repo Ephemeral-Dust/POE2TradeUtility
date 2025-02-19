@@ -21,39 +21,43 @@
 // ==/UserScript==
 
 var panelSide = GM_getValue('panelSide', 'right');
+var showIronRuneValues = GM_getValue('showIronRuneValues', true);
+var trackItemHistory = GM_getValue('trackItemHistory', true);
+
 var tabs = [{
         id: 'weightedSumContent',
-        label: 'Calculate Weighted Sum'
+        label: 'Calculate Weighted Sum',
+        index: 0,
+        content: `
+            <label for="itemTextArea">Paste Item Below:</label>
+            <textarea id="itemTextArea" rows="20" style="width: 100%; background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;"></textarea>
+            <button id="calculateButton" style="margin-top: 10px; padding: 10px; background: #555; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Calculate</button>
+            <p id="resultLabel" style="margin-top: 10px; color: #fff;"></p>
+        `
     },
     {
         id: 'settingsContent',
-        label: 'Settings'
+        label: 'Settings',
+        index: 1,
+        content: `
+            <label for="panelSideSelect">Panel Side:</label>
+            <select id="panelSideSelect" style="background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;">
+                <option value="right" ${panelSide === 'right' ? 'selected' : ''}>Right</option>
+                <option value="left" ${panelSide === 'left' ? 'selected' : ''}>Left</option>
+            </select>
+            <br><br>
+            <label for="showIronRuneValues">Show Iron Rune Values:</label>
+            <input type="checkbox" id="showIronRuneValues" ${showIronRuneValues ? 'checked' : ''}>
+            <br><br>
+            <label for="trackItemHistory">Track Item History:</label>
+            <input type="checkbox" id="trackItemHistory" ${trackItemHistory ? 'checked' : ''}>
+        `
     }
 ];
 
-// Global variables for tab contents
-var weightedSumContentHTML = `
-    <label for="itemTextArea">Paste Item Below:</label>
-    <textarea id="itemTextArea" rows="20" style="width: 100%; background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;"></textarea>
-    <button id="calculateButton" style="margin-top: 10px; padding: 10px; background: #555; color: #fff; border: none; border-radius: 5px; cursor: pointer;">Calculate</button>
-    <p id="resultLabel" style="margin-top: 10px; color: #fff;"></p>
-`;
-var settingsContentHTML = `
-    <label for="panelSideSelect">Panel Side:</label>
-    <select id="panelSideSelect" style="background: #444; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 5px;">
-        <option value="right" ${panelSide === 'right' ? 'selected' : ''}>Right</option>
-        <option value="left" ${panelSide === 'left' ? 'selected' : ''}>Left</option>
-    </select>
-`;
-
-
-
-
+// Script entry point, ran after the page has loaded
 (function () {
     'use strict';
-
-    const processedRows = new Set();
-
 
     // Create the panel and tab elements
     const panel = createPanel();
@@ -68,7 +72,7 @@ var settingsContentHTML = `
     // Create tabs and contents
     tabs.forEach(tabInfo => {
         const tabButton = createTabButton(tabInfo);
-        const tabContent = createWeightedSumTab(tabInfo);
+        const tabContent = createTabContent(tabInfo);
 
         tabContainer.appendChild(tabButton);
         panel.appendChild(tabContent);
@@ -95,17 +99,13 @@ var settingsContentHTML = `
         const tabContent = document.getElementById(tabInfo.id);
 
         tabButton.addEventListener('click', () => {
-            document.querySelectorAll('.tabButton').forEach(button => button.classList.remove('active'));
-            document.querySelectorAll('.weightedSumContent').forEach(content => content.classList.remove('show'));
-
-            tabButton.classList.add('active');
-            tabContent.classList.add('show');
+            setActiveTab(tabInfo.index);
         });
     });
 
     // Add setting to change panel side
     const settingsContent = document.getElementById('settingsContent');
-    settingsContent.innerHTML = settingsContentHTML;
+    settingsContent.innerHTML = tabs.find(tab => tab.id === 'settingsContent').content;
 
     document.getElementById('panelSideSelect').addEventListener('change', (event) => {
         panelSide = event.target.value;
@@ -113,11 +113,21 @@ var settingsContentHTML = `
         setPanelSide(panelSide);
     });
 
+    document.getElementById('showIronRuneValues').addEventListener('change', (event) => {
+        showIronRuneValues = event.target.checked;
+        GM_setValue('showIronRuneValues', showIronRuneValues);
+    });
+
+    document.getElementById('trackItemHistory').addEventListener('change', (event) => {
+        trackItemHistory = event.target.checked;
+        GM_setValue('trackItemHistory', trackItemHistory);
+    });
+
     // Set initial panel side
     setPanelSide(panelSide);
 
-    document.getElementById(`${tabs[0].id}Button`).classList.add('active');
-    document.getElementById(tabs[0].id).classList.add('show');
+    // Set initial active tab
+    setActiveTab(0);
 
     // Enable/disable calculate button based on textarea content
     const itemTextArea = document.getElementById('itemTextArea');
@@ -151,114 +161,36 @@ var settingsContentHTML = `
 
     function createToggleButton() {
         const toggleButton = document.createElement('div');
-        toggleButton.id = 'toggleButton';
+        toggleButton.id = 'trade_toggleButton';
         toggleButton.textContent = '⇨';
         return toggleButton;
     }
 
     function createTabContainer() {
         const tabContainer = document.createElement('div');
-        tabContainer.id = 'tabContainer';
+        tabContainer.id = 'trade_tabContainer';
         return tabContainer;
     }
 
     function createTabButton(tabInfo) {
         const tabButton = document.createElement('div');
         tabButton.id = `${tabInfo.id}Button`;
-        tabButton.className = 'tabButton';
+        tabButton.className = 'trade_tabButton';
         tabButton.textContent = tabInfo.label;
         return tabButton;
     }
 
-    function createWeightedSumTab(tabInfo) {
+    function createTabContent(tabInfo) {
         const tabContent = document.createElement('div');
         tabContent.id = tabInfo.id;
-        tabContent.className = 'weightedSumContent';
-        tabContent.innerHTML = tabInfo.id === 'weightedSumContent' ? weightedSumContentHTML : settingsContentHTML;
+        tabContent.className = 'trade_tabContent';
+        tabContent.innerHTML = tabInfo.content;
         return tabContent;
-    }
-
-    function addStyles() {
-        GM_addStyle(`
-            #tradePanel {
-                position: fixed;
-                top: 0;
-                right: 0;
-                width: 300px;
-                height: 100%;
-                background: #333;
-                color: #fff;
-                border-left: 1px solid #444;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-                box-shadow: -2px 0 5px rgba(0,0,0,0.5);
-                z-index: 9999;
-            }
-            #tradePanel.show {
-                transform: translateX(0);
-            }
-            #toggleButton {
-                position: absolute;
-                top: 50%;
-                left: -50px;
-                width: 50px;
-                height: 50px;
-                background: rgba(51, 51, 51, 0.2);
-                color: #fff;
-                text-align: center;
-                line-height: 50px;
-                cursor: pointer;
-                transition: background 0.3s ease;
-                border-radius: 25px;
-                box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
-            }
-            #toggleButton:hover {
-                background: rgba(51, 51, 51, 0.8);
-            }
-            #tabContainer {
-                display: flex;
-                justify-content: space-around;
-                background: #444;
-                padding: 10px 0;
-            }
-            .tabButton {
-                flex: 1;
-                padding: 10px;
-                text-align: center;
-                cursor: pointer;
-                transition: background 0.3s ease, color 0.3s ease;
-                background: rgba(51, 51, 51, 0.2);
-                color: #fff;
-                border: 1px solid #444;
-                border-radius: 5px;
-                margin: 0 5px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .tabButton:hover {
-                background: rgba(51, 51, 51, 0.5);
-            }
-            .tabButton.active {
-                background: #555;
-                color: #fff;
-                border-color: #555;
-            }
-            .weightedSumContent {
-                display: none;
-                padding: 20px;
-                background: #333;
-                border-top: 1px solid #444;
-            }
-            .weightedSumContent.show {
-                display: block;
-            }
-        `);
     }
 
     function setPanelSide(side) {
         const panel = document.getElementById('tradePanel');
-        const toggleButton = document.getElementById('toggleButton');
+        const toggleButton = document.getElementById('trade_toggleButton');
         if (side === 'left') {
             panel.style.right = 'auto';
             panel.style.left = '0';
@@ -279,13 +211,31 @@ var settingsContentHTML = `
 
     function updateToggleButton() {
         const panel = document.getElementById('tradePanel');
-        const toggleButton = document.getElementById('toggleButton');
+        const toggleButton = document.getElementById('trade_toggleButton');
         if (panel.classList.contains('show')) {
             toggleButton.textContent = panelSide === 'right' ? '⇨' : '⇦';
         } else {
             toggleButton.textContent = panelSide === 'right' ? '⇦' : '⇨';
         }
     }
+
+    function setActiveTab(index) {
+        document.querySelectorAll('.trade_tabButton').forEach(button => button.classList.remove('active'));
+        document.querySelectorAll('.trade_tabContent').forEach(content => content.classList.remove('show'));
+
+        const activeTab = tabs.find(tab => tab.index === index);
+        if (activeTab) {
+            document.getElementById(`${activeTab.id}Button`).classList.add('active');
+            document.getElementById(activeTab.id).classList.add('show');
+        }
+    }
+
+    handleItemProcessing();
+})();
+
+// Function to handle item processing on the page
+function handleItemProcessing() {
+    const processedRows = new Set();
 
     const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -308,8 +258,112 @@ var settingsContentHTML = `
         childList: true,
         subtree: true
     });
-})();
+}
 
+// Function to add CSS styles to the page
+function addStyles() {
+    GM_addStyle(`
+        #tradePanel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: #333;
+            color: #fff;
+            border-left: 1px solid #444;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+            z-index: 9999;
+        }
+        #tradePanel.show {
+            transform: translateX(0);
+        }
+        #trade_toggleButton {
+            position: absolute;
+            top: 50%;
+            left: -50px;
+            width: 50px;
+            height: 50px;
+            background: rgba(51, 51, 51, 0.2);
+            color: #fff;
+            text-align: center;
+            line-height: 50px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-radius: 25px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+        }
+        #trade_toggleButton:hover {
+            background: rgba(51, 51, 51, 0.8);
+        }
+        #trade_tabContainer {
+            display: flex;
+            justify-content: space-around;
+            background: #444;
+            padding: 10px 0;
+        }
+        .trade_tabButton {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s ease, color 0.3s ease;
+            background: rgba(51, 51, 51, 0.2);
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 5px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .trade_tabButton:hover {
+            background: rgba(51, 51, 51, 0.5);
+        }
+        .trade_tabButton.active {
+            background: #555;
+            color: #fff;
+            border-color: #555;
+        }
+        .trade_tabContent {
+            display: none;
+            padding: 20px;
+            background: #333;
+            border-top: 1px solid #444;
+        }
+        .trade_tabContent.show {
+            display: block;
+        }
+        .trade_textarea, .trade_select, .trade_checkbox, .trade_button {
+            background: #444;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .trade_button {
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .trade_button:hover {
+            background: #555;
+        }
+        .trade_popup {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+    `);
+}
+
+// Function to calculate the weighted sum of an item using in-game text format and advanced search filters
 function calculateWeightedSum(itemText) {
     const item = parseItem(itemText);
     if (!item) {
@@ -366,7 +420,7 @@ function calculateWeightedSum(itemText) {
     return results;
 }
 
-
+// Function to get the weighted sum filters from the advanced search pane
 function getWeightedSum() {
     const advancedPane = document.querySelector('.search-advanced-pane.brown');
     if (!advancedPane) {
@@ -444,6 +498,7 @@ function processMod(modLine) {
     return defaultMod;
 }
 
+// Item parsing functions for in-game text format
 function parseItem(itemText) {
     const lines = itemText.split('\n');
     let item = {
@@ -526,7 +581,7 @@ function processItem(row, processedRows) {
         // Direct Whisper button is clicked.
         const button = rightDiv.querySelector('button.btn.btn-xs.btn-default.direct-btn');
 
-        if (button && itemId && sellerName) {
+        if (button && itemId && sellerName && trackItemHistory) {
             whisperHandler(itemId, sellerName, button, rightDiv);
         }
 
@@ -540,7 +595,7 @@ function processItem(row, processedRows) {
             }
         });
 
-        if (!hasTargetRune) {
+        if (!hasTargetRune && showIronRuneValues) {
             handleIronRune(middleDiv, leftDiv);
         }
 
@@ -755,15 +810,7 @@ function whisperHandler(itemId, sellerName, button, rightDiv) {
             const itemInfo = getItemInfo(itemId);
             if (itemInfo) {
                 const popup = document.createElement('div');
-                popup.className = 'price-history-popup';
-                popup.style.position = 'absolute';
-                popup.style.backgroundColor = '#333';
-                popup.style.color = '#fff';
-                popup.style.border = '1px solid #444';
-                popup.style.padding = '10px';
-                popup.style.borderRadius = '5px';
-                popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-                popup.style.zIndex = '1000';
+                popup.className = 'trade_popup';
 
                 let content = `<strong>Price History:</strong><br>`;
                 itemInfo.priceHistory.forEach(entry => {
