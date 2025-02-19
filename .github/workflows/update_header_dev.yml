@@ -17,7 +17,7 @@ jobs:
 
       - name: Modify Userscript Header for Dev
         run: |
-          sed -i '/@name         POE2 Trade Utility$/!b; s//$& (Dev)/' "POE Trade Utility.js"
+          sed -i 's|@name         POE2 Trade Utility\( (Dev)\)\?$|@name         POE2 Trade Utility (Dev)|' "POE Trade Utility.js"
           sed -i 's|@updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js|@updateURL    https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js|' "POE Trade Utility.js"
           sed -i 's|@downloadURL  https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/main/POE%20Trade%20Utility.js|@downloadURL  https://raw.githubusercontent.com/Ephemeral-Dust/POE2TradeUtility/dev/POE%20Trade%20Utility.js|' "POE Trade Utility.js"
 
